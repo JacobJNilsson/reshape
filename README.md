@@ -1,6 +1,6 @@
 # Reshape
 
-Reshape is a Go CLI for reshaping structured data between formats using an explicit canonical model and a conversion plan.
+`reshape` is a deterministic data reshaping engine that converts data between formats by translating them through an explicit, inspectable intermediate representation, making all lossy decisions visible, testable, and overridable.
 
 Supported formats:
 
