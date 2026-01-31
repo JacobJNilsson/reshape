@@ -1,0 +1,8 @@
+# Go modules
+go.mod
+go.sum
+
+# Editor files
+.idea
+.vscode
+.DS_Store
