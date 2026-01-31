@@ -85,7 +85,7 @@ func TransformData(input CanonicalData, plan ConversionPlan) (CanonicalData, []W
 		if _, err := requireLossyDecision(decisionMap, StrategyJoinArray, rule.Path); err != nil {
 			return CanonicalData{}, nil, err
 		}
-		addWarningOnce(&warnings, warningSet, rule.Path, "joined array into string")
+		addWarningOnce(&warnings, warningSet, rule.Path, WarningCodeJoinArray)
 	}
 
 	for _, rule := range normalizedPlan.TypeCoercions {
@@ -108,7 +108,7 @@ func TransformData(input CanonicalData, plan ConversionPlan) (CanonicalData, []W
 		if _, err := requireLossyDecision(decisionMap, StrategyCoerceType, rule.Path); err != nil {
 			return CanonicalData{}, nil, err
 		}
-		addWarningOnce(&warnings, warningSet, rule.Path, "coerced type")
+		addWarningOnce(&warnings, warningSet, rule.Path, WarningCodeCoerceType)
 	}
 
 	for _, rule := range normalizedPlan.DefaultValues {
@@ -134,7 +134,7 @@ func TransformData(input CanonicalData, plan ConversionPlan) (CanonicalData, []W
 		if _, err := requireLossyDecision(decisionMap, StrategyDropField, path); err != nil {
 			return CanonicalData{}, nil, err
 		}
-		addWarningOnce(&warnings, warningSet, path, "dropped field")
+		addWarningOnce(&warnings, warningSet, path, WarningCodeDropField)
 	}
 
 	output := CanonicalData{Values: DataValues{Records: records}}
@@ -241,16 +241,16 @@ func coerceValue(value any, targetType LogicalType) (any, error) {
 	}
 }
 
-func addWarningOnce(warnings *[]Warning, warningSet map[string]struct{}, path, message string) {
-	key := path + ":" + message
+func addWarningOnce(warnings *[]Warning, warningSet map[string]struct{}, path string, code WarningCode) {
+	key := path + ":" + string(code)
 	if _, exists := warningSet[key]; exists {
 		return
 	}
 	warningSet[key] = struct{}{}
-	*warnings = append(*warnings, Warning{Path: path, Message: message})
+	*warnings = append(*warnings, WarningFor(code, path))
 	sort.SliceStable(*warnings, func(i, j int) bool {
 		if (*warnings)[i].Path == (*warnings)[j].Path {
-			return (*warnings)[i].Message < (*warnings)[j].Message
+			return (*warnings)[i].Code < (*warnings)[j].Code
 		}
 		return (*warnings)[i].Path < (*warnings)[j].Path
 	})

@@ -41,6 +41,19 @@ type DataValues struct {
 // Record represents a canonical record.
 type Record map[string]any
 
+// WarningCode categorizes lossy or noteworthy operations.
+type WarningCode string
+
+const (
+	WarningCodeJoinArray WarningCode = "join_array"
+	WarningCodeDropField WarningCode = "drop_field"
+	WarningCodeCoerceType WarningCode = "coerce_type"
+)
+
+func (c WarningCode) String() string {
+	return string(c)
+}
+
 // CanonicalData is the canonical representation of structured data.
 type CanonicalData struct {
 	Shape  DataShape  `json:"shape"`
@@ -49,6 +62,7 @@ type CanonicalData struct {
 
 // Warning captures lossy or noteworthy operations.
 type Warning struct {
-	Path    string
+	Code WarningCode
 	Message string
+	Path string
 }
