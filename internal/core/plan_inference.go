@@ -12,10 +12,10 @@ func InferConversionPlan(data CanonicalData, targetFormat string) ConversionPlan
 	flattenSet := map[string]struct{}{}
 	explodeSet := map[string]struct{}{}
 	joinRules := map[string]JoinArrayRule{}
-	lossyOps := map[string]LossyOperation{}
+	lossyDecisions := map[string]LossyDecision{}
 
 	for _, record := range data.Values.Records {
-		collectPlanSuggestions(record, "", flattenSet, explodeSet, joinRules, lossyOps)
+		collectPlanSuggestions(record, "", flattenSet, explodeSet, joinRules, lossyDecisions)
 	}
 
 	flattenFields := setToSortedSlice(flattenSet)
@@ -25,26 +25,26 @@ func InferConversionPlan(data CanonicalData, targetFormat string) ConversionPlan
 		joinArrays = append(joinArrays, rule)
 	}
 	sort.Slice(joinArrays, func(i, j int) bool { return joinArrays[i].Path < joinArrays[j].Path })
-	lossyOperations := make([]LossyOperation, 0, len(lossyOps))
-	for _, op := range lossyOps {
-		lossyOperations = append(lossyOperations, op)
+	decisions := make([]LossyDecision, 0, len(lossyDecisions))
+	for _, decision := range lossyDecisions {
+		decisions = append(decisions, decision)
 	}
-	sort.Slice(lossyOperations, func(i, j int) bool {
-		if lossyOperations[i].Operation == lossyOperations[j].Operation {
-			return lossyOperations[i].Path < lossyOperations[j].Path
+	sort.Slice(decisions, func(i, j int) bool {
+		if decisions[i].Strategy == decisions[j].Strategy {
+			return decisions[i].FieldPath < decisions[j].FieldPath
 		}
-		return lossyOperations[i].Operation < lossyOperations[j].Operation
+		return decisions[i].Strategy < decisions[j].Strategy
 	})
 
 	return ConversionPlan{
 		FlattenFields:   flattenFields,
 		ExplodeArrays:   explodeArrays,
 		JoinArrays:      joinArrays,
-		LossyOperations: lossyOperations,
+		LossyDecisions:  decisions,
 	}
 }
 
-func collectPlanSuggestions(value any, prefix string, flattenSet map[string]struct{}, explodeSet map[string]struct{}, joinRules map[string]JoinArrayRule, lossyOps map[string]LossyOperation) {
+func collectPlanSuggestions(value any, prefix string, flattenSet map[string]struct{}, explodeSet map[string]struct{}, joinRules map[string]JoinArrayRule, lossyDecisions map[string]LossyDecision) {
 	if recordMap, ok := mapFromValue(value); ok {
 		if prefix != "" {
 			flattenSet[prefix] = struct{}{}
@@ -54,7 +54,7 @@ func collectPlanSuggestions(value any, prefix string, flattenSet map[string]stru
 			if prefix != "" {
 				path = prefix + "." + key
 			}
-			collectPlanSuggestions(nested, path, flattenSet, explodeSet, joinRules, lossyOps)
+			collectPlanSuggestions(nested, path, flattenSet, explodeSet, joinRules, lossyDecisions)
 		}
 		return
 	}
@@ -68,10 +68,18 @@ func collectPlanSuggestions(value any, prefix string, flattenSet map[string]stru
 			explodeSet[prefix] = struct{}{}
 		case LogicalTypeString, LogicalTypeNumber, LogicalTypeBoolean:
 			joinRules[prefix] = JoinArrayRule{Path: prefix, Delimiter: ","}
-			lossyOps[prefix] = LossyOperation{Path: prefix, Operation: LossyOperationJoinArray, Reason: "CSV does not support arrays"}
+			lossyDecisions[prefix] = LossyDecision{
+				FieldPath: prefix,
+				Reason:    LossReasonFormatLimit,
+				Strategy:  StrategyJoinArray,
+			}
 		default:
 			joinRules[prefix] = JoinArrayRule{Path: prefix, Delimiter: ","}
-			lossyOps[prefix] = LossyOperation{Path: prefix, Operation: LossyOperationJoinArray, Reason: "CSV does not support arrays"}
+			lossyDecisions[prefix] = LossyDecision{
+				FieldPath: prefix,
+				Reason:    LossReasonFormatLimit,
+				Strategy:  StrategyJoinArray,
+			}
 		}
 		return
 	}

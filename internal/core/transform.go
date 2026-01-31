@@ -11,10 +11,15 @@ import (
 // TransformData applies the conversion plan to canonical data.
 func TransformData(input CanonicalData, plan ConversionPlan) (CanonicalData, []Warning, error) {
 	normalizedPlan := NormalizePlan(plan)
-	if err := ValidateLossyOperations(normalizedPlan); err != nil {
+	if err := ValidateLossyDecisions(normalizedPlan); err != nil {
 		return CanonicalData{}, nil, err
 	}
 	records := deepCopyRecords(input.Values.Records)
+	decisionMap := map[string]LossyDecision{}
+	for _, decision := range normalizedPlan.LossyDecisions {
+		key := string(decision.Strategy) + ":" + decision.FieldPath
+		decisionMap[key] = decision
+	}
 	warnings := []Warning{}
 	warningSet := map[string]struct{}{}
 
@@ -77,6 +82,9 @@ func TransformData(input CanonicalData, plan ConversionPlan) (CanonicalData, []W
 				return CanonicalData{}, nil, err
 			}
 		}
+		if _, err := requireLossyDecision(decisionMap, StrategyJoinArray, rule.Path); err != nil {
+			return CanonicalData{}, nil, err
+		}
 		addWarningOnce(&warnings, warningSet, rule.Path, "joined array into string")
 	}
 
@@ -96,6 +104,9 @@ func TransformData(input CanonicalData, plan ConversionPlan) (CanonicalData, []W
 			if err := setValueAtPath(records[index], rule.Path, coerced); err != nil {
 				return CanonicalData{}, nil, err
 			}
+		}
+		if _, err := requireLossyDecision(decisionMap, StrategyCoerceType, rule.Path); err != nil {
+			return CanonicalData{}, nil, err
 		}
 		addWarningOnce(&warnings, warningSet, rule.Path, "coerced type")
 	}
@@ -119,6 +130,9 @@ func TransformData(input CanonicalData, plan ConversionPlan) (CanonicalData, []W
 			if err := deleteValueAtPath(records[index], path); err != nil {
 				return CanonicalData{}, nil, err
 			}
+		}
+		if _, err := requireLossyDecision(decisionMap, StrategyDropField, path); err != nil {
+			return CanonicalData{}, nil, err
 		}
 		addWarningOnce(&warnings, warningSet, path, "dropped field")
 	}
@@ -240,6 +254,15 @@ func addWarningOnce(warnings *[]Warning, warningSet map[string]struct{}, path, m
 		}
 		return (*warnings)[i].Path < (*warnings)[j].Path
 	})
+}
+
+func requireLossyDecision(decisions map[string]LossyDecision, strategy Strategy, path string) (LossyDecision, error) {
+	key := string(strategy) + ":" + path
+	decision, ok := decisions[key]
+	if !ok {
+		return LossyDecision{}, errors.New("missing lossy_decisions entry for path: " + path)
+	}
+	return decision, nil
 }
 
 func deepCopyRecords(records []Record) []Record {

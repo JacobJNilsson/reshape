@@ -30,11 +30,11 @@ func TestInferConversionPlanForCSV(t *testing.T) {
 	if !hasJoinArray(plan.JoinArrays, "flags") {
 		t.Fatalf("expected join for flags")
 	}
-	if !hasLossyOp(plan.LossyOperations, "tags", core.LossyOperationJoinArray) {
-		t.Fatalf("expected lossy op for tags")
+	if !hasLossyDecision(plan.LossyDecisions, "tags", core.StrategyJoinArray) {
+		t.Fatalf("expected lossy decision for tags")
 	}
-	if !hasLossyOp(plan.LossyOperations, "flags", core.LossyOperationJoinArray) {
-		t.Fatalf("expected lossy op for flags")
+	if !hasLossyDecision(plan.LossyDecisions, "flags", core.StrategyJoinArray) {
+		t.Fatalf("expected lossy decision for flags")
 	}
 }
 
@@ -56,9 +56,9 @@ func hasJoinArray(rules []core.JoinArrayRule, path string) bool {
 	return false
 }
 
-func hasLossyOp(ops []core.LossyOperation, path string, op core.LossyOperationType) bool {
-	for _, entry := range ops {
-		if entry.Path == path && entry.Operation == op {
+func hasLossyDecision(decisions []core.LossyDecision, path string, strategy core.Strategy) bool {
+	for _, entry := range decisions {
+		if entry.FieldPath == path && entry.Strategy == strategy {
 			return true
 		}
 	}

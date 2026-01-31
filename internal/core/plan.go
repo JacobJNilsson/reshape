@@ -1,19 +1,27 @@
 package core
 
-// LossyOperationType describes a lossy conversion.
-type LossyOperationType string
+// LossReason describes why a lossy decision is needed.
+type LossReason string
 
 const (
-	LossyOperationJoinArray  LossyOperationType = "join_array"
-	LossyOperationDropField  LossyOperationType = "drop_field"
-	LossyOperationCoerceType LossyOperationType = "coerce_type"
+	LossReasonFormatLimit LossReason = "format_limit"
+	LossReasonUserRequest LossReason = "user_request"
 )
 
-// LossyOperation records explicit approval for a lossy action.
-type LossyOperation struct {
-	Path      string             `json:"path"`
-	Operation LossyOperationType `json:"operation"`
-	Reason    string             `json:"reason,omitempty"`
+// Strategy describes how a lossy decision is applied.
+type Strategy string
+
+const (
+	StrategyJoinArray Strategy = "join_array"
+	StrategyDropField Strategy = "drop_field"
+	StrategyCoerceType Strategy = "coerce_type"
+)
+
+// LossyDecision records explicit approval for a lossy action.
+type LossyDecision struct {
+	FieldPath string     `json:"field_path"`
+	Reason    LossReason `json:"reason"`
+	Strategy  Strategy   `json:"strategy"`
 }
 
 // JoinArrayRule defines how to join arrays.
@@ -42,5 +50,5 @@ type ConversionPlan struct {
 	TypeCoercions   []TypeCoercionRule `json:"type_coercions,omitempty"`
 	DefaultValues   []DefaultValueRule `json:"default_values,omitempty"`
 	DropFields      []string           `json:"drop_fields,omitempty"`
-	LossyOperations []LossyOperation   `json:"lossy_operations,omitempty"`
+	LossyDecisions  []LossyDecision    `json:"lossy_decisions,omitempty"`
 }

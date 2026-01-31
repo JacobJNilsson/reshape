@@ -22,9 +22,9 @@ func TestTransformNestedJSONToCSVWithPlan(t *testing.T) {
 			{Path: "metrics.scores", Delimiter: ";"},
 			{Path: "tags", Delimiter: ";"},
 		},
-		LossyOperations: []core.LossyOperation{
-			{Path: "metrics.scores", Operation: core.LossyOperationJoinArray, Reason: "CSV requires scalars"},
-			{Path: "tags", Operation: core.LossyOperationJoinArray, Reason: "CSV requires scalars"},
+		LossyDecisions: []core.LossyDecision{
+			{FieldPath: "metrics.scores", Strategy: core.StrategyJoinArray, Reason: core.LossReasonFormatLimit},
+			{FieldPath: "tags", Strategy: core.StrategyJoinArray, Reason: core.LossReasonFormatLimit},
 		},
 	}
 
@@ -61,8 +61,8 @@ func TestTransformDeterministic(t *testing.T) {
 		TypeCoercions: []core.TypeCoercionRule{
 			{Path: "age", TargetType: core.LogicalTypeString},
 		},
-		LossyOperations: []core.LossyOperation{
-			{Path: "age", Operation: core.LossyOperationCoerceType, Reason: "string output"},
+		LossyDecisions: []core.LossyDecision{
+			{FieldPath: "age", Strategy: core.StrategyCoerceType, Reason: core.LossReasonUserRequest},
 		},
 	}
 
