@@ -21,11 +21,11 @@ type FieldConstraints struct {
 
 // FieldDefinition describes a canonical field.
 type FieldDefinition struct {
-	Path        string           `json:"path"`
-	Type        LogicalType      `json:"type"`
-	Nullable    bool             `json:"nullable"`
-	Repeated    bool             `json:"repeated"`
-	Constraints FieldConstraints `json:"constraints,omitempty"`
+	Path        string            `json:"path"`
+	Type        LogicalType       `json:"type"`
+	Nullable    bool              `json:"nullable"`
+	Repeated    bool              `json:"repeated"`
+	Constraints *FieldConstraints `json:"constraints,omitempty"`
 }
 
 // DataShape describes the paths, types, and repetition for canonical records.
@@ -45,8 +45,8 @@ type Record map[string]any
 type WarningCode string
 
 const (
-	WarningCodeJoinArray WarningCode = "join_array"
-	WarningCodeDropField WarningCode = "drop_field"
+	WarningCodeJoinArray  WarningCode = "join_array"
+	WarningCodeDropField  WarningCode = "drop_field"
 	WarningCodeCoerceType WarningCode = "coerce_type"
 )
 
@@ -62,7 +62,7 @@ type CanonicalData struct {
 
 // Warning captures lossy or noteworthy operations.
 type Warning struct {
-	Code WarningCode
+	Code    WarningCode
 	Message string
-	Path string
+	Path    string
 }

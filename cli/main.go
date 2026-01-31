@@ -17,10 +17,17 @@ func main() {
 	toFlag := flag.String("to", "", "output format: json or csv")
 	planPath := flag.String("plan", "", "path to conversion plan JSON")
 	inferPlan := flag.Bool("infer-plan", false, "infer a conversion plan")
+	inspect := flag.Bool("inspect", false, "print shape and lossy decisions, then exit")
 	flag.Parse()
 
-	if *fromFlag == "" || *toFlag == "" {
-		exitWithError(errors.New("--from and --to are required"))
+	if *fromFlag == "" {
+		exitWithError(errors.New("--from is required"))
+	}
+	if !*inspect && *toFlag == "" {
+		exitWithError(errors.New("--to is required unless --inspect is set"))
+	}
+	if *inspect && *inferPlan && *toFlag == "" {
+		exitWithError(errors.New("--to is required with --infer-plan"))
 	}
 	if *inferPlan && *planPath != "" {
 		exitWithError(errors.New("--plan and --infer-plan cannot be used together"))
@@ -57,6 +64,17 @@ func main() {
 	}
 	if *inferPlan {
 		plan = core.InferConversionPlan(inputData, *toFlag)
+	}
+
+	if *inspect {
+		output, err := inspectOutput(inputData, plan)
+		if err != nil {
+			exitWithError(err)
+		}
+		if _, err := os.Stdout.Write(output); err != nil {
+			exitWithError(err)
+		}
+		return
 	}
 
 	transformed, warnings, err := core.TransformData(inputData, plan)
@@ -111,6 +129,18 @@ func renderOutput(format string, data core.CanonicalData) ([]byte, error) {
 	default:
 		return nil, errors.New("unsupported --to format")
 	}
+}
+
+func inspectOutput(data core.CanonicalData, plan core.ConversionPlan) ([]byte, error) {
+	normalized := core.NormalizePlan(plan)
+	payload := struct {
+		Shape          core.DataShape       `json:"shape"`
+		LossyDecisions []core.LossyDecision `json:"lossy_decisions,omitempty"`
+	}{
+		Shape:          data.Shape,
+		LossyDecisions: normalized.LossyDecisions,
+	}
+	return json.Marshal(payload)
 }
 
 func exitWithError(err error) {
