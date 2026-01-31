@@ -17,19 +17,22 @@ func ParseJSON(input []byte) (core.CanonicalData, error) {
 	if err != nil {
 		return core.CanonicalData{}, err
 	}
-	schema := core.BuildSchemaFromRecords(records)
-	return core.CanonicalData{Schema: schema, Records: records}, nil
+	shape := core.BuildShapeFromRecords(records)
+	return core.CanonicalData{
+		Shape:  shape,
+		Values: core.DataValues{Records: records},
+	}, nil
 }
 
 // RenderJSON converts canonical data into JSON bytes.
 func RenderJSON(data core.CanonicalData) ([]byte, error) {
-	if len(data.Records) == 0 {
+	if len(data.Values.Records) == 0 {
 		return json.Marshal([]any{})
 	}
-	if len(data.Records) == 1 {
-		return json.Marshal(data.Records[0])
+	if len(data.Values.Records) == 1 {
+		return json.Marshal(data.Values.Records[0])
 	}
-	return json.Marshal(data.Records)
+	return json.Marshal(data.Values.Records)
 }
 
 func jsonToRecords(value any) ([]core.Record, error) {

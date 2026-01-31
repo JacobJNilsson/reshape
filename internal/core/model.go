@@ -28,9 +28,14 @@ type FieldDefinition struct {
 	Constraints FieldConstraints `json:"constraints,omitempty"`
 }
 
-// CanonicalSchema describes the schema for canonical records.
-type CanonicalSchema struct {
+// DataShape describes the paths, types, and repetition for canonical records.
+type DataShape struct {
 	Fields []FieldDefinition `json:"fields"`
+}
+
+// DataValues contains the canonical records.
+type DataValues struct {
+	Records []Record `json:"records"`
 }
 
 // Record represents a canonical record.
@@ -38,8 +43,8 @@ type Record map[string]any
 
 // CanonicalData is the canonical representation of structured data.
 type CanonicalData struct {
-	Schema  CanonicalSchema `json:"schema"`
-	Records []Record        `json:"records"`
+	Shape  DataShape  `json:"shape"`
+	Values DataValues `json:"values"`
 }
 
 // Warning captures lossy or noteworthy operations.

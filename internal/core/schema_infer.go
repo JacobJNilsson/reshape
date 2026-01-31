@@ -11,8 +11,8 @@ type fieldStats struct {
 	repeated     bool
 }
 
-// BuildSchemaFromRecords infers a schema from canonical records.
-func BuildSchemaFromRecords(records []Record) CanonicalSchema {
+// BuildShapeFromRecords infers a shape from canonical records.
+func BuildShapeFromRecords(records []Record) DataShape {
 	statsByPath := map[string]*fieldStats{}
 	for _, record := range records {
 		pathsInRecord := map[string]struct{}{}
@@ -37,7 +37,7 @@ func BuildSchemaFromRecords(records []Record) CanonicalSchema {
 	}
 
 	sort.Slice(fields, func(i, j int) bool { return fields[i].Path < fields[j].Path })
-	return CanonicalSchema{Fields: fields}
+	return DataShape{Fields: fields}
 }
 
 func collectFieldStats(value any, prefix string, statsByPath map[string]*fieldStats, pathsInRecord map[string]struct{}) {

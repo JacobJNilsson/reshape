@@ -8,13 +8,13 @@ import (
 )
 
 func TestTransformNestedJSONToCSVWithPlan(t *testing.T) {
-	inputData := core.CanonicalData{Records: []core.Record{
+	inputData := core.CanonicalData{Values: core.DataValues{Records: []core.Record{
 		{
 			"user":    map[string]any{"email": "a@example.com", "name": "Ada"},
 			"tags":    []any{"alpha", "beta"},
 			"metrics": map[string]any{"scores": []any{1.0, 2.0}, "active": true},
 		},
-	}}
+	}}}
 
 	plan := core.ConversionPlan{
 		FlattenFields: []string{"metrics", "user"},
@@ -33,10 +33,10 @@ func TestTransformNestedJSONToCSVWithPlan(t *testing.T) {
 		t.Fatalf("transform: %v", err)
 	}
 
-	if len(transformed.Records) != 1 {
-		t.Fatalf("expected 1 record, got %d", len(transformed.Records))
+	if len(transformed.Values.Records) != 1 {
+		t.Fatalf("expected 1 record, got %d", len(transformed.Values.Records))
 	}
-	record := transformed.Records[0]
+	record := transformed.Values.Records[0]
 	if record["metrics.active"] != true {
 		t.Fatalf("expected metrics.active true, got %v", record["metrics.active"])
 	}
@@ -52,10 +52,10 @@ func TestTransformNestedJSONToCSVWithPlan(t *testing.T) {
 }
 
 func TestTransformDeterministic(t *testing.T) {
-	inputData := core.CanonicalData{Records: []core.Record{
+	inputData := core.CanonicalData{Values: core.DataValues{Records: []core.Record{
 		{"name": "Ada", "age": 30.0},
 		{"name": "Linus", "age": 55.0},
-	}}
+	}}}
 
 	plan := core.ConversionPlan{
 		TypeCoercions: []core.TypeCoercionRule{

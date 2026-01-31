@@ -38,8 +38,11 @@ func ParseCSV(input []byte) (core.CanonicalData, error) {
 		records = append(records, record)
 	}
 
-	schema := core.BuildSchemaFromRecords(records)
-	return core.CanonicalData{Schema: schema, Records: records}, nil
+	shape := core.BuildShapeFromRecords(records)
+	return core.CanonicalData{
+		Shape:  shape,
+		Values: core.DataValues{Records: records},
+	}, nil
 }
 
 // RenderCSV converts canonical data into CSV bytes.
@@ -51,7 +54,7 @@ func RenderCSV(data core.CanonicalData) ([]byte, error) {
 	if err := writer.Write(headers); err != nil {
 		return nil, err
 	}
-	for _, record := range data.Records {
+	for _, record := range data.Values.Records {
 		row := make([]string, len(headers))
 		for index, header := range headers {
 			value, exists, err := core.ValueAtPath(record, header)
@@ -87,11 +90,11 @@ func RenderCSV(data core.CanonicalData) ([]byte, error) {
 
 func schemaHeaders(data core.CanonicalData) []string {
 	headers := []string{}
-	for _, field := range data.Schema.Fields {
+	for _, field := range data.Shape.Fields {
 		headers = append(headers, field.Path)
 	}
 	if len(headers) == 0 {
-		headers = recordHeaders(data.Records)
+		headers = recordHeaders(data.Values.Records)
 	}
 	sort.Strings(headers)
 	return headers

@@ -17,11 +17,11 @@ func TestParseJSONObject(t *testing.T) {
 		t.Fatalf("parse json: %v", err)
 	}
 
-	if len(data.Records) != 1 {
-		t.Fatalf("expected 1 record, got %d", len(data.Records))
+	if len(data.Values.Records) != 1 {
+		t.Fatalf("expected 1 record, got %d", len(data.Values.Records))
 	}
-	if data.Records[0]["name"] != "Ada" {
-		t.Fatalf("expected name Ada, got %v", data.Records[0]["name"])
+	if data.Values.Records[0]["name"] != "Ada" {
+		t.Fatalf("expected name Ada, got %v", data.Values.Records[0]["name"])
 	}
 }
 

@@ -26,27 +26,27 @@ func TestValueAtPathPrefersLiteralKey(t *testing.T) {
 }
 
 func TestTransformFlattensNestedObject(t *testing.T) {
-	input := core.CanonicalData{Records: []core.Record{
+	input := core.CanonicalData{Values: core.DataValues{Records: []core.Record{
 		{"user": map[string]any{"name": "Ada"}},
-	}}
+	}}}
 	plan := core.ConversionPlan{FlattenFields: []string{"user"}}
 
 	output, _, err := core.TransformData(input, plan)
 	if err != nil {
 		t.Fatalf("transform: %v", err)
 	}
-	if _, ok := output.Records[0]["user"]; ok {
+	if _, ok := output.Values.Records[0]["user"]; ok {
 		t.Fatalf("expected user key to be removed")
 	}
-	if output.Records[0]["user.name"] != "Ada" {
-		t.Fatalf("expected flattened value, got %v", output.Records[0]["user.name"])
+	if output.Values.Records[0]["user.name"] != "Ada" {
+		t.Fatalf("expected flattened value, got %v", output.Values.Records[0]["user.name"])
 	}
 }
 
 func TestTransformRejectsFlattenNonObject(t *testing.T) {
-	input := core.CanonicalData{Records: []core.Record{
+	input := core.CanonicalData{Values: core.DataValues{Records: []core.Record{
 		{"user": "Ada"},
-	}}
+	}}}
 	plan := core.ConversionPlan{FlattenFields: []string{"user"}}
 
 	_, _, err := core.TransformData(input, plan)

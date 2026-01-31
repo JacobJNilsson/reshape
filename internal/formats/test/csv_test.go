@@ -15,11 +15,11 @@ func TestParseCSVValid(t *testing.T) {
 	if err != nil {
 		t.Fatalf("parse csv: %v", err)
 	}
-	if len(data.Records) != 2 {
-		t.Fatalf("expected 2 records, got %d", len(data.Records))
+	if len(data.Values.Records) != 2 {
+		t.Fatalf("expected 2 records, got %d", len(data.Values.Records))
 	}
-	if data.Records[1]["age"] != nil {
-		t.Fatalf("expected nil age for empty column, got %v", data.Records[1]["age"])
+	if data.Values.Records[1]["age"] != nil {
+		t.Fatalf("expected nil age for empty column, got %v", data.Values.Records[1]["age"])
 	}
 }
 
@@ -42,12 +42,12 @@ func TestParseCSVRejectsMismatchedRow(t *testing.T) {
 
 func TestRenderCSVUsesSchemaPaths(t *testing.T) {
 	data := core.CanonicalData{
-		Schema: core.CanonicalSchema{Fields: []core.FieldDefinition{
+		Shape: core.DataShape{Fields: []core.FieldDefinition{
 			{Path: "user.name", Type: core.LogicalTypeString},
 		}},
-		Records: []core.Record{
+		Values: core.DataValues{Records: []core.Record{
 			{"user": map[string]any{"name": "Ada"}},
-		},
+		}},
 	}
 
 	output, err := formats.RenderCSV(data)
@@ -62,12 +62,12 @@ func TestRenderCSVUsesSchemaPaths(t *testing.T) {
 
 func TestRenderCSVRejectsObjectValues(t *testing.T) {
 	data := core.CanonicalData{
-		Schema: core.CanonicalSchema{Fields: []core.FieldDefinition{
+		Shape: core.DataShape{Fields: []core.FieldDefinition{
 			{Path: "user", Type: core.LogicalTypeObject},
 		}},
-		Records: []core.Record{
+		Values: core.DataValues{Records: []core.Record{
 			{"user": map[string]any{"name": "Ada"}},
-		},
+		}},
 	}
 
 	_, err := formats.RenderCSV(data)

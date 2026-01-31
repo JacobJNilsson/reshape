@@ -6,15 +6,15 @@ import (
 	"reshape/internal/core"
 )
 
-func TestBuildSchemaFromRecords(t *testing.T) {
+func TestBuildShapeFromRecords(t *testing.T) {
 	records := []core.Record{
 		{"name": "Ada", "age": 30.0, "tags": []any{"a", "b"}},
 		{"name": nil, "tags": []any{}},
 	}
 
-	schema := core.BuildSchemaFromRecords(records)
+	shape := core.BuildShapeFromRecords(records)
 
-	field := fieldByPath(schema, "name")
+	field := fieldByPath(shape, "name")
 	if field.Path == "" {
 		t.Fatalf("expected name field")
 	}
@@ -25,7 +25,7 @@ func TestBuildSchemaFromRecords(t *testing.T) {
 		t.Fatalf("expected name type string, got %s", field.Type)
 	}
 
-	ageField := fieldByPath(schema, "age")
+	ageField := fieldByPath(shape, "age")
 	if ageField.Path == "" {
 		t.Fatalf("expected age field")
 	}
@@ -36,7 +36,7 @@ func TestBuildSchemaFromRecords(t *testing.T) {
 		t.Fatalf("expected age type number, got %s", ageField.Type)
 	}
 
-	tagsField := fieldByPath(schema, "tags")
+	tagsField := fieldByPath(shape, "tags")
 	if tagsField.Path == "" {
 		t.Fatalf("expected tags field")
 	}
@@ -48,8 +48,8 @@ func TestBuildSchemaFromRecords(t *testing.T) {
 	}
 }
 
-func fieldByPath(schema core.CanonicalSchema, path string) core.FieldDefinition {
-	for _, field := range schema.Fields {
+func fieldByPath(shape core.DataShape, path string) core.FieldDefinition {
+	for _, field := range shape.Fields {
 		if field.Path == path {
 			return field
 		}

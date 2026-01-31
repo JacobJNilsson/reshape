@@ -7,14 +7,14 @@ import (
 )
 
 func TestInferConversionPlanForCSV(t *testing.T) {
-	data := core.CanonicalData{Records: []core.Record{
+	data := core.CanonicalData{Values: core.DataValues{Records: []core.Record{
 		{
 			"user":  map[string]any{"name": "Ada"},
 			"tags":  []any{"a", "b"},
 			"items": []any{map[string]any{"sku": "1"}},
 			"flags": []any{true, false},
 		},
-	}}
+	}}}
 
 	plan := core.InferConversionPlan(data, "csv")
 

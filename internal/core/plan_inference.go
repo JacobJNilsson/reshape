@@ -14,7 +14,7 @@ func InferConversionPlan(data CanonicalData, targetFormat string) ConversionPlan
 	joinRules := map[string]JoinArrayRule{}
 	lossyOps := map[string]LossyOperation{}
 
-	for _, record := range data.Records {
+	for _, record := range data.Values.Records {
 		collectPlanSuggestions(record, "", flattenSet, explodeSet, joinRules, lossyOps)
 	}
 

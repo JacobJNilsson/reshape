@@ -14,7 +14,7 @@ func TransformData(input CanonicalData, plan ConversionPlan) (CanonicalData, []W
 	if err := ValidateLossyOperations(normalizedPlan); err != nil {
 		return CanonicalData{}, nil, err
 	}
-	records := deepCopyRecords(input.Records)
+	records := deepCopyRecords(input.Values.Records)
 	warnings := []Warning{}
 	warningSet := map[string]struct{}{}
 
@@ -123,11 +123,11 @@ func TransformData(input CanonicalData, plan ConversionPlan) (CanonicalData, []W
 		addWarningOnce(&warnings, warningSet, path, "dropped field")
 	}
 
-	output := CanonicalData{Records: records}
+	output := CanonicalData{Values: DataValues{Records: records}}
 	if len(records) > 0 {
-		output.Schema = BuildSchemaFromRecords(records)
+		output.Shape = BuildShapeFromRecords(records)
 	} else {
-		output.Schema = input.Schema
+		output.Shape = input.Shape
 	}
 	return output, warnings, nil
 }
